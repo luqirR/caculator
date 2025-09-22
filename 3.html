@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的智能零花钱统计器</title>
+    <meta name="description" content="一个简单有趣的零花钱统计工具，适合小朋友使用">
+    <meta name="theme-color" content="#ff6b6b">
+    <link rel="manifest" href="manifest.json">
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Comic Sans MS', 'Marker Felt', 'Arial Rounded MT Bold', sans-serif;
+        }
+        
+        body {
+            background-color: #f0f9ff;
+            background-image: radial-gradient(#ffd6e7 2px, transparent 2px), radial-gradient(#cce5ff 2px, transparent 2px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background-color: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+        
+        h1 {
+            color: #ff6b6b;
+            text-align: center;
+            font-size: 2.2rem;
+            text-shadow: 2px 2px 0 #ffd166;
+            margin-bottom: 30px;
+            letter-spacing: 1px;
+        }
+        
+        .form-container {
+            background-color: #e9f5db;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .input-field {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #457b9d;
+            font-weight: bold;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #a8dadc;
+            border-radius: 10px;
+            font-size: 16px;
+            outline: none;
+        }
+        
+        input:focus {
+            border-color: #457b9d;
+            box-shadow: 0 0 0 3px rgba(69, 123, 157, 0.2);
+        }
+        
+        button {
+            background-color: #ff9e6d;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 25px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            box-shadow: 0 4px 0 #e63946;
+        }
+        
+        button:hover {
+            background-color: #ff8a5b;
+            transform: translateY(-2px);
+        }
+        
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #e63946;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 2px solid #a8dadc;
+        }
+        
+        th {
+            background-color: #457b9d;
+            color: white;
+            font-size: 18px;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f1faee;
+        }
+        
+        tr:hover {
+            background-color: #d8f3dc;
+        }
+        
+        .total-row {
+            background-color: #ffd166 !important;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .delete-btn {
+            background-color: #e63946;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        
+        .empty-message {
+            text-align: center;
+            color: #6c757d;
+            padding: 20px;
+            font-style: italic;
+        }
+        
+        /* 移动设备优化 */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 15px;
+                border-radius: 15px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+                margin-bottom: 20px;
+            }
+            
+            .form-container {
+                padding: 15px;
+            }
+            
+            .input-field {
+                min-width: 100%;
+            }
+            
+            th, td {
+                padding: 10px;
+                font-size: 14px;
+            }
+            
+            button {
+                width: 100%;
+                padding: 15px;
+            }
+            
+            /* 表格在小屏幕上水平滚动 */
+            .table-container {
+                overflow-x: auto;
+                width: 100%;
+            }
+        }
+        
+        /* 添加到主屏幕提示 */
+        .install-prompt {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #457b9d;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            display: none;
+            z-index: 1000;
+            max-width: 90%;
+            text-align: center;
+        }
+        
+        .install-prompt button {
+            background-color: white;
+            color: #457b9d;
+            margin-left: 10px;
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>我的智能零花钱统计器</h1>
+    
+    <div class="container">
+        <div class="form-container">
+            <div class="input-group">
+                <div class="input-field">
+                    <label for="item">消费项目</label>
+                    <input type="text" id="item" placeholder="例如：玩具、零食、书本...">
+                </div>
+                <div class="input-field">
+                    <label for="amount">金额 (¥)</label>
+                    <input type="number" id="amount" placeholder="请输入金额" min="0" step="0.01">
+                </div>
+            </div>
+            <button id="add-btn">添加消费记录 ➕</button>
+        </div>
+        
+        <div class="table-container">
+            <table id="expense-table">
+                <thead>
+                    <tr>
+                        <th>消费项目</th>
+                        <th>金额 (¥)</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="expense-body">
+                    <!-- 消费记录将动态添加到这里 -->
+                    <tr class="empty-row">
+                        <td colspan="3" class="empty-message">还没有消费记录，快来添加吧！</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr class="total-row">
+                        <td>总支出</td>
+                        <td id="total-amount">¥0.00</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+    
+    <div class="install-prompt" id="install-prompt">
+        将此应用安装到您的手机主屏幕，以便随时随地使用！
+        <button id="install-btn">安装</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const itemInput = document.getElementById('item');
+            const amountInput = document.getElementById('amount');
+            const addButton = document.getElementById('add-btn');
+            const expenseBody = document.getElementById('expense-body');
+            const totalAmountElement = document.getElementById('total-amount');
+            const installPrompt = document.getElementById('install-prompt');
+            const installButton = document.getElementById('install-btn');
+            
+            let expenses = [];
+            let totalAmount = 0;
+            let deferredPrompt;
+            
+            // 检查是否支持PWA功能
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                
+                // 显示安装提示
+                setTimeout(() => {
+                    installPrompt.style.display = 'block';
+                }, 3000);
+            });
+            
+            installButton.addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    if (outcome === 'accepted') {
+                        installPrompt.style.display = 'none';
+                    }
+                    deferredPrompt = null;
+                }
+            });
+            
+            // 尝试从本地存储加载数据
+            if (localStorage.getItem('expenses')) {
+                expenses = JSON.parse(localStorage.getItem('expenses'));
+                renderExpenses();
+                updateTotalAmount();
+            }
+            
+            // 添加消费记录
+            addButton.addEventListener('click', function() {
+                const item = itemInput.value.trim();
+                const amount = parseFloat(amountInput.value);
+                
+                if (item === '' || isNaN(amount) || amount <= 0) {
+                    alert('请输入有效的消费项目和金额！');
+                    return;
+                }
+                
+                // 添加新消费记录
+                addExpense(item, amount);
+                
+                // 更新总支出
+                updateTotalAmount();
+                
+                // 保存到本地存储
+                saveToLocalStorage();
+                
+                // 清空输入框
+                itemInput.value = '';
+                amountInput.value = '';
+                itemInput.focus();
+            });
+            
+            // 渲染所有消费记录
+            function renderExpenses() {
+                expenseBody.innerHTML = '';
+                
+                if (expenses.length === 0) {
+                    const emptyRow = document.createElement('tr');
+                    emptyRow.className = 'empty-row';
+                    emptyRow.innerHTML = `
+                        <td colspan="3" class="empty-message">还没有消费记录，快来添加吧！</td>
+                    `;
+                    expenseBody.appendChild(emptyRow);
+                    return;
+                }
+                
+                expenses.forEach((expense, index) => {
+                    const newRow = document.createElement('tr');
+                    newRow.innerHTML = `
+                        <td>${expense.item}</td>
+                        <td>¥${expense.amount.toFixed(2)}</td>
+                        <td>
+                            <button class="delete-btn" data-index="${index}">删除</button>
+                        </td>
+                    `;
+                    
+                    expenseBody.appendChild(newRow);
+                });
+                
+                // 添加删除按钮事件
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const index = parseInt(this.getAttribute('data-index'));
+                        expenses.splice(index, 1);
+                        renderExpenses();
+                        updateTotalAmount();
+                        saveToLocalStorage();
+                    });
+                });
+            }
+            
+            // 添加单条消费记录
+            function addExpense(item, amount) {
+                expenses.push({ item, amount });
+                
+                // 移除空行提示（如果存在）
+                const emptyRow = document.querySelector('.empty-row');
+                if (emptyRow) {
+                    emptyRow.remove();
+                }
+                
+                // 创建新行
+                const newRow = document.createElement('tr');
+                newRow.innerHTML = `
+                    <td>${item}</td>
+                    <td>¥${amount.toFixed(2)}</td>
+                    <td>
+                        <button class="delete-btn">删除</button>
+                    </td>
+                `;
+                
+                // 添加删除按钮事件
+                newRow.querySelector('.delete-btn').addEventListener('click', function() {
+                    const rowIndex = Array.from(expenseBody.children).indexOf(newRow);
+                    expenses.splice(rowIndex, 1);
+                    newRow.remove();
+                    updateTotalAmount();
+                    saveToLocalStorage();
+                    
+                    // 如果没有记录了，显示空行提示
+                    if (expenseBody.children.length === 0) {
+                        const emptyRow = document.createElement('tr');
+                        emptyRow.className = 'empty-row';
+                        emptyRow.innerHTML = `
+                            <td colspan="3" class="empty-message">还没有消费记录，快来添加吧！</td>
+                        `;
+                        expenseBody.appendChild(emptyRow);
+                    }
+                });
+                
+                expenseBody.appendChild(newRow);
+            }
+            
+            // 更新总支出
+            function updateTotalAmount() {
+                totalAmount = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+                totalAmountElement.textContent = `¥${totalAmount.toFixed(2)}`;
+            }
+            
+            // 保存到本地存储
+            function saveToLocalStorage() {
+                localStorage.setItem('expenses', JSON.stringify(expenses));
+            }
+            
+            // 支持按Enter键提交
+            amountInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addButton.click();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
